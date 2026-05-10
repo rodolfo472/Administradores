@@ -1,481 +1,537 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Neon Parkour 3D</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Neon Parkour 3D - Aprimorado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-<style>
+        body {
+            overflow: hidden;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); /* Fundo gradiente escuro e misterioso */
+            color: white;
+        }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
 
-body{
-    overflow:hidden;
-    background:black;
-}
+        /* MENU */
+        #menu {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            z-index: 10;
+            text-align: center;
+        }
 
-canvas{
-    display:block;
-}
+        .title {
+            font-size: 60px;
+            color: #00ffff;
+            text-shadow: 0 0 30px #00ffff, 0 0 50px #00ffff, 0 0 70px #00ffff;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite alternate;
+        }
 
-/* MENU */
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
 
-#menu{
-    position:absolute;
-    inset:0;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    gap:20px;
-    background:rgba(0,0,0,0.5);
-    backdrop-filter:blur(10px);
-    z-index:10;
-}
+        .btn {
+            width: 280px;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease-in-out;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3);
+            text-transform: uppercase;
+        }
 
-.title{
-    font-size:45px;
-    color:#00ffff;
-    text-shadow:0 0 20px #00ffff;
-    margin-bottom:20px;
-}
+        .btn:hover {
+            transform: translateY(-5px) scale(1.08);
+            background: #00ffff;
+            color: #0f0c29;
+            box-shadow: 0 0 40px #00ffff, 0 10px 20px rgba(0, 255, 255, 0.4);
+        }
 
-.btn{
-    width:220px;
-    padding:16px;
-    border:none;
-    border-radius:20px;
-    font-size:20px;
-    font-weight:bold;
-    cursor:pointer;
-    color:white;
-    background:rgba(255,255,255,0.1);
-    backdrop-filter:blur(10px);
-    transition:0.3s;
-    box-shadow:0 0 20px rgba(0,255,255,0.5);
-}
+        /* HUD */
+        #hud {
+            position: absolute;
+            inset: 0;
+            display: none;
+            pointer-events: none;
+            z-index: 5;
+        }
 
-.btn:hover{
-    transform:scale(1.05);
-    background:#00ffff;
-    color:black;
-}
+        /* JOYSTICK */
+        #joystickBase {
+            position: absolute;
+            left: 40px;
+            bottom: 40px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            pointer-events: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-/* HUD */
+        #joystick {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #00ffff;
+            box-shadow: 0 0 25px #00ffff, 0 0 15px rgba(0, 255, 255, 0.7);
+            transition: transform 0.1s ease-out;
+        }
 
-#hud{
-    position:absolute;
-    inset:0;
-    display:none;
-    pointer-events:none;
-}
+        /* JUMPBUTTON */
+        #jumpBtn {
+            position: absolute;
+            right: 40px;
+            bottom: 40px;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: none;
+            background: radial-gradient(circle, #ff00ff, #8a008a); /* Gradiente para o botão */
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            box-shadow: 0 0 30px #ff00ff, 0 0 15px rgba(255, 0, 255, 0.7);
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-/* JOYSTICK */
+        #jumpBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px #ff00ff;
+        }
 
-#joystickBase{
-    position:absolute;
-    left:30px;
-    bottom:30px;
-    width:130px;
-    height:130px;
-    border-radius:50%;
-    background:rgba(255,255,255,0.1);
-    border:2px solid #00ffff;
-    pointer-events:auto;
-}
+        /* SHOP */
+        #shop {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 350px;
+            padding: 30px;
+            border-radius: 25px;
+            background: rgba(15, 12, 41, 0.85); /* Cor de fundo mais escura */
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            display: none;
+            z-index: 20;
+            color: #e0e0e0;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
 
-#joystick{
-    position:absolute;
-    left:35px;
-    top:35px;
-    width:60px;
-    height:60px;
-    border-radius:50%;
-    background:#00ffff;
-    box-shadow:0 0 20px #00ffff;
-}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(0.95); }
+        }
 
-/* JUMP BUTTON */
+        #shop h2 {
+            font-size: 30px;
+            color: #00ffff;
+            text-shadow: 0 0 15px #00ffff;
+            margin-bottom: 25px;
+        }
 
-#jumpBtn{
-    position:absolute;
-    right:40px;
-    bottom:40px;
-    width:100px;
-    height:100px;
-    border-radius:50%;
-    border:none;
-    background:#ff00ff;
-    color:white;
-    font-size:25px;
-    font-weight:bold;
-    box-shadow:0 0 20px #ff00ff;
-    pointer-events:auto;
-}
+        .shopItem {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 18px;
+            background: rgba(0, 255, 255, 0.08);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            font-size: 18px;
+            transition: background 0.3s ease;
+        }
 
-/* SHOP */
+        .shopItem:hover {
+            background: rgba(0, 255, 255, 0.2);
+            cursor: pointer;
+        }
 
-#shop{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:300px;
-    padding:20px;
-    border-radius:20px;
-    background:rgba(0,0,0,0.8);
-    border:2px solid #00ffff;
-    display:none;
-    z-index:20;
-    color:white;
-}
+        .closeBtn {
+            margin-top: 30px;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 18px;
+            background: #00ffff;
+            color: #0f0c29;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
 
-.shopItem{
-    margin-top:15px;
-    padding:15px;
-    border-radius:15px;
-    background:rgba(255,255,255,0.1);
-}
+        .closeBtn:hover {
+            background: #00c0c0;
+            box-shadow: 0 0 25px #00c0c0;
+            transform: translateY(-3px);
+        }
 
-.closeBtn{
-    margin-top:20px;
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:15px;
-    background:#00ffff;
-    color:black;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-</style>
+        /* Efeitos de Partículas (opcional, pode ser pesado) */
+        .particles-js {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- MENU -->
-
-<div id="menu">
-
-    <div class="title">NEON PARKOUR 3D</div>
-
-    <button class="btn" id="playBtn">PLAY</button>
-    <button class="btn" id="shopBtn">SHOP</button>
-    <button class="btn" id="vipBtn">VIP</button>
-
-</div>
-
-<!-- SHOP -->
-
-<div id="shop">
-
-    <h2>🛒 SHOP</h2>
-
-    <div class="shopItem">
-        Neon Trail - 100 Coins
+    <!-- MENU -->
+    <div id="menu">
+        <div class="title">NEON PARKOUR 3D</div>
+        <button class="btn" id="playBtn">PLAY</button>
+        <button class="btn" id="shopBtn">SHOP</button>
+        <button class="btn" id="vipBtn">VIP</button>
     </div>
 
-    <div class="shopItem">
-        VIP Wings - 300 Coins
+    <!-- SHOP -->
+    <div id="shop">
+        <h2>🛒 SHOP</h2>
+        <div class="shopItem">Neon Trail - 100 Coins</div>
+        <div class="shopItem">VIP Wings - 300 Coins</div>
+        <div class="shopItem">Speed Boost - 200 Coins</div>
+        <button class="closeBtn" id="closeShop">CLOSE</button>
     </div>
 
-    <div class="shopItem">
-        Speed Boost - 200 Coins
+    <!-- HUD -->
+    <div id="hud">
+        <div id="joystickBase">
+            <div id="joystick"></div>
+        </div>
+        <button id="jumpBtn">↑</button>
     </div>
 
-    <button class="closeBtn" id="closeShop">
-        CLOSE
-    </button>
-
-</div>
-
-<!-- HUD -->
-
-<div id="hud">
-
-    <div id="joystickBase">
-        <div id="joystick"></div>
-    </div>
-
-    <button id="jumpBtn">↑</button>
-
-</div>
-
-<script type="module">
-
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
-
-/* SCENE */
-
-const scene = new THREE.Scene();
-
-scene.fog = new THREE.FogExp2(0x000000,0.015);
-
-/* CAMERA */
-
-const camera = new THREE.PerspectiveCamera(
-75,
-window.innerWidth/window.innerHeight,
-0.1,
-1000
-);
-
-camera.position.set(0,3,8);
-
-/* RENDER */
-
-const renderer = new THREE.WebGLRenderer({
-antialias:true
-});
-
-renderer.setSize(window.innerWidth,window.innerHeight);
-
-renderer.shadowMap.enabled = true;
-
-document.body.appendChild(renderer.domElement);
-
-/* LIGHTS */
-
-const ambient = new THREE.AmbientLight(0xffffff,0.6);
-
-scene.add(ambient);
-
-const light = new THREE.DirectionalLight(0x00ffff,2);
-
-light.position.set(10,20,10);
-
-light.castShadow = true;
-
-scene.add(light);
-
-/* FLOOR */
-
-const floorGeo = new THREE.BoxGeometry(200,1,200);
-
-const floorMat = new THREE.MeshStandardMaterial({
-color:0x050505,
-metalness:1,
-roughness:0.1
-});
-
-const floor = new THREE.Mesh(floorGeo,floorMat);
-
-floor.receiveShadow = true;
-
-floor.position.y = -2;
-
-scene.add(floor);
-
-/* PLAYER */
-
-const playerGeo = new THREE.BoxGeometry(1,2,1);
-
-const playerMat = new THREE.MeshStandardMaterial({
-color:0x00ffff,
-emissive:0x00ffff,
-emissiveIntensity:1
-});
-
-const player = new THREE.Mesh(playerGeo,playerMat);
-
-player.position.y = 0;
-
-player.castShadow = true;
-
-scene.add(player);
-
-/* PLATFORMS */
-
-function createPlatform(x,y,z,color){
-
-    const geo = new THREE.BoxGeometry(6,1,6);
-
-    const mat = new THREE.MeshStandardMaterial({
-        color:color,
-        emissive:color,
-        emissiveIntensity:1
-    });
-
-    const mesh = new THREE.Mesh(geo,mat);
-
-    mesh.position.set(x,y,z);
-
-    mesh.castShadow = true;
-
-    scene.add(mesh);
-
-}
-
-for(let i=0;i<30;i++){
-
-    createPlatform(
-        Math.random()*80-40,
-        Math.random()*15,
-        Math.random()*80-40,
-        new THREE.Color(
-            Math.random(),
-            Math.random(),
-            Math.random()
-        )
-    );
-
-}
-
-/* MENU BUTTONS */
-
-const menu = document.getElementById("menu");
-const hud = document.getElementById("hud");
-
-document.getElementById("playBtn").onclick = ()=>{
-
-    menu.style.display = "none";
-
-    hud.style.display = "block";
-
-};
-
-document.getElementById("shopBtn").onclick = ()=>{
-
-    document.getElementById("shop").style.display = "block";
-
-};
-
-document.getElementById("closeShop").onclick = ()=>{
-
-    document.getElementById("shop").style.display = "none";
-
-};
-
-document.getElementById("vipBtn").onclick = ()=>{
-
-    alert("VIP COMING SOON");
-
-};
-
-/* JOYSTICK */
-
-let moveX = 0;
-let moveZ = 0;
-
-const joystick = document.getElementById("joystick");
-const base = document.getElementById("joystickBase");
-
-base.addEventListener("touchmove",(e)=>{
-
-    const touch = e.touches[0];
-
-    const rect = base.getBoundingClientRect();
-
-    const x = touch.clientX - rect.left - 65;
-    const y = touch.clientY - rect.top - 65;
-
-    moveX = x * 0.03;
-    moveZ = y * 0.03;
-
-    joystick.style.left = (x + 35) + "px";
-    joystick.style.top = (y + 35) + "px";
-
-});
-
-base.addEventListener("touchend",()=>{
-
-    moveX = 0;
-    moveZ = 0;
-
-    joystick.style.left = "35px";
-    joystick.style.top = "35px";
-
-});
-
-/* JUMP */
-
-let velocityY = 0;
-let grounded = true;
-
-document.getElementById("jumpBtn").onclick = ()=>{
-
-    if(grounded){
-
-        velocityY = 0.25;
-
-        grounded = false;
-
-    }
-
-};
-
-/* CAMERA FOLLOW */
-
-function updateCamera(){
-
-    camera.position.x = player.position.x;
-
-    camera.position.z = player.position.z + 8;
-
-    camera.position.y = player.position.y + 4;
-
-    camera.lookAt(player.position);
-
-}
-
-/* ANIMATE */
-
-function animate(){
-
-    requestAnimationFrame(animate);
-
-    /* MOVE */
-
-    player.position.x += moveX * 0.1;
-
-    player.position.z += moveZ * 0.1;
-
-    /* GRAVITY */
-
-    velocityY -= 0.01;
-
-    player.position.y += velocityY;
-
-    if(player.position.y <= 0){
-
-        player.position.y = 0;
-
-        velocityY = 0;
-
-        grounded = true;
-
-    }
-
-    updateCamera();
-
-    renderer.render(scene,camera);
-
-}
-
-animate();
-
-/* RESIZE */
-
-window.addEventListener("resize",()=>{
-
-    camera.aspect = window.innerWidth/window.innerHeight;
-
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
-
-});
-
-</script>
-
-</body>
-</html>
+    <!-- Partículas (Opcional - Requer biblioteca externa) -->
+    <!-- <div id="particles-js"></div> -->
+
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
+        // Para partículas, você pode usar a biblioteca 'particles.js' ou 'three-particles'
+        // Exemplo com tsParticles (requer inclusão do script e um div #particles-js no HTML)
+        // import { tsParticles } from "https://cdn.jsdelivr.net/npm/tsparticles@2.10.1/tsparticles.bundle.min.js";
+
+        /* --- CONFIGURAÇÕES GERAIS --- */
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a081a, 0.01); // Neblina mais escura e profunda
+
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(0, 5, 12); // Posição inicial da câmera um pouco mais alta
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Sombras mais suaves
+        document.body.appendChild(renderer.domElement);
+
+        /* --- ILUMINAÇÃO --- */
+        const ambient = new THREE.AmbientLight(0xffffff, 0.4); // Luz ambiente mais suave
+        scene.add(ambient);
+
+        const directionalLight = new THREE.DirectionalLight(0x00ffff, 1.8); // Luz principal com cor ciano
+        directionalLight.position.set(15, 30, 15);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 1024; // Resolução da sombra
+        directionalLight.shadow.mapSize.height = 1024;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 50;
+        directionalLight.shadow.camera.left = -20;
+        directionalLight.shadow.camera.right = 20;
+        directionalLight.shadow.camera.top = 20;
+        directionalLight.shadow.camera.bottom = -20;
+        scene.add(directionalLight);
+
+        // Luz adicional para realçar o jogador
+        const playerLight = new THREE.PointLight(0x00ffff, 2, 15);
+        playerLight.position.set(0, 2, 0);
+        scene.add(playerLight);
+
+        /* --- CHÃO --- */
+        const floorGeo = new THREE.PlaneGeometry(400, 400); // Chão maior
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x050505,
+            metalness: 0.8,
+            roughness: 0.2,
+            side: THREE.DoubleSide // Para garantir que o chão seja visível de ambos os lados
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2; // Rotaciona para ficar horizontal
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        /* --- JOGADOR --- */
+        // Usando uma geometria mais estilizada ou um modelo simples
+        const playerGeo = new THREE.BoxGeometry(1.2, 2.5, 1.2); // Um pouco maior
+        const playerMat = new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            emissive: 0x00ffff,
+            emissiveIntensity: 1.5, // Mais brilho emissivo
+            metalness: 0.7,
+            roughness: 0.3
+        });
+        const player = new THREE.Mesh(playerGeo, playerMat);
+        player.position.y = 1.25; // Ajusta a posição inicial para ficar no chão
+        player.castShadow = true;
+        scene.add(player);
+
+        /* --- PLATAFORMAS --- */
+        const platformGroup = new THREE.Group(); // Agrupa as plataformas
+        scene.add(platformGroup);
+
+        function createPlatform(x, y, z, color) {
+            const geo = new THREE.BoxGeometry(6, 1, 6);
+            const mat = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color.clone().multiplyScalar(0.5), // Emissão mais sutil
+                emissiveIntensity: 1,
+                metalness: 0.6,
+                roughness: 0.4
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true; // Plataformas também recebem sombra
+            platformGroup.add(mesh);
+        }
+
+        // Cria um conjunto de plataformas mais organizado e com mais variação
+        const numPlatforms = 50;
+        for (let i = 0; i < numPlatforms; i++) {
+            const x = (Math.random() - 0.5) * 180; // Distribuição mais centralizada
+            const y = Math.random() * 20 + 1; // Altura variada
+            const z = (Math.random() - 0.5) * 180;
+            const color = new THREE.Color(
+                Math.random() * 0.3 + 0.7, // Cores mais vibrantes
+                Math.random() * 0.3 + 0.7,
+                Math.random() * 0.3 + 0.7
+            );
+            createPlatform(x, y, z, color);
+        }
+
+        /* --- EFEITOS DE PARTÍCULAS (BÁSICO) --- */
+        const particleMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            emissive: 0x00ffff,
+            emissiveIntensity: 2,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const particles = [];
+        const numParticles = 100;
+        for (let i = 0; i < numParticles; i++) {
+            const particleGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const particle = new THREE.Mesh(particleGeo, particleMaterial);
+            particle.position.set(
+                (Math.random() - 0.5) * 200,
+                Math.random() * 30 + 5,
+                (Math.random() - 0.5) * 200
+            );
+            particle.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.5,
+                (Math.random() - 0.5) * 0.5,
+                (Math.random() - 0.5) * 0.5
+            );
+            particle.lifespan = Math.random() * 10 + 5; // Tempo de vida
+            particle.age = 0;
+            scene.add(particle);
+            particles.push(particle);
+        }
+
+        /* --- ELEMENTOS DA UI --- */
+        const menuDiv = document.getElementById("menu");
+        const hudDiv = document.getElementById("hud");
+        const shopDiv = document.getElementById("shop");
+
+        document.getElementById("playBtn").onclick = () => {
+            menuDiv.style.display = "none";
+            hudDiv.style.display = "block";
+            // Opcional: Iniciar o jogo/animação aqui
+        };
+
+        document.getElementById("shopBtn").onclick = () => {
+            shopDiv.style.display = "block";
+            menuDiv.style.display = "none"; // Oculta o menu principal
+            hudDiv.style.display = "none"; // Oculta o HUD temporariamente
+        };
+
+        document.getElementById("closeShop").onclick = () => {
+            shopDiv.style.display = "none";
+            menuDiv.style.display = "flex"; // Volta para o menu principal
+            hudDiv.style.display = "none"; // Garante que o HUD não apareça
+        };
+
+        document.getElementById("vipBtn").onclick = () => {
+            alert("VIP COMING SOON - Aguarde novidades!");
+        };
+
+        /* --- CONTROLES DO JOYSTICK --- */
+        let moveX = 0;
+        let moveZ = 0;
+        let isJoystickActive = false;
+
+        const joystick = document.getElementById("joystick");
+        const base = document.getElementById("joystickBase");
+        const joystickRadius = base.offsetWidth / 2;
+        const stickRadius = joystick.offsetWidth / 2;
+
+        function updateJoystickPosition(clientX, clientY) {
+            const rect = base.getBoundingClientRect();
+            const centerX = rect.left + joystickRadius;
+            const centerY = rect.top + joystickRadius;
+
+            let deltaX = clientX - centerX;
+            let deltaY = clientY - centerY;
+
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const maxDistance = joystickRadius - stickRadius;
+
+            if (distance <= maxDistance) {
+                // Dentro do limite
+                joystick.style.left = `${deltaX + stickRadius}px`;
+                joystick.style.top = `${deltaY + stickRadius}px`;
+                moveX = deltaX / maxDistance;
+                moveZ = deltaY / maxDistance; // Y no CSS é Z no mundo 3D, mas invertido
+            } else {
+                // Fora do limite, limita ao máximo
+                const angle = Math.atan2(deltaY, deltaX);
+                deltaX = maxDistance * Math.cos(angle);
+                deltaY = maxDistance * Math.sin(angle);
+                joystick.style.left = `${deltaX + stickRadius}px`;
+                joystick.style.top = `${deltaY + stickRadius}px`;
+                moveX = deltaX / maxDistance;
+                moveZ = deltaY / maxDistance;
+            }
+        }
+
+        base.addEventListener("touchstart", (e) => {
+            if (e.touches.length > 0) {
+                isJoystickActive = true;
+                updateJoystickPosition(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        base.addEventListener("touchmove", (e) => {
+            if (isJoystickActive && e.touches.length > 0) {
+                updateJoystickPosition(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        base.addEventListener("touchend", () => {
+            isJoystickActive = false;
+            moveX = 0;
+            moveZ = 0;
+            joystick.style.left = `${stickRadius}px`;
+            joystick.style.top = `${stickRadius}px`;
+        });
+
+        /* --- CONTROLE DE PULO --- */
+        let velocityY = 0;
+        let grounded = true;
+        const jumpForce = 0.4; // Força do pulo
+        const gravity = 0.02; // Gravidade mais forte
+
+        document.getElementById("jumpBtn").addEventListener("click", () => {
+            if (grounded) {
+                velocityY = jumpForce;
+                grounded = false;
+                // Efeito visual para o botão de pulo
+                const jumpBtn = document.getElementById("jumpBtn");
+                jumpBtn.style.transform = "scale(1.1)";
+                setTimeout(() => {
+                    jumpBtn.style.transform = "scale(1)";
+                }, 150);
+            }
+        });
+
+        /* --- LÓGICA DE SEGUIR A CÂMERA --- */
+        function updateCamera() {
+            // Câmera segue o jogador com um offset e suavidade
+            const targetX = player.position.x;
+            const targetY = player.position.y + 5; // Câmera um pouco acima
+            const targetZ = player.position.z + 10; // Câmera atrás do jogador
+
+            camera.position.x = camera.position.x + (targetX - camera.position.x) * 0.08;
+            camera.position.y = camera.position.y + (targetY - camera.position.y) * 0.08;
+            camera.position.z = camera.position.z + (targetZ - camera.position.z) * 0.08;
+
+            camera.lookAt(player.position.x, player.position.y, player.position.z);
+        }
+
+        /* --- LOOP DE ANIMAÇÃO --- */
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Movimento do jogador
+            const moveSpeed = 0.1; // Velocidade de movimento
+            player.position.x += moveX * moveSpeed;
+            player.position.z += moveZ * moveSpeed;
+
+            // Aplica gravidade e atualiza posição Y
+            velocityY -= gravity;
+            player.position.y += velocityY;
+
+            // Verifica se o jogador tocou o chão
+            if (player.position.y <= playerGeo.parameters.height / 2) { // Usa a altura da geometria do jogador
+                player.position.y = playerGeo.parameters.height / 2;
+                velocityY = 0;
+                grounded = true;
+            }
+
+            // Atualiza a câmera
+            updateCamera();
+
+            // Atualiza partículas (efeito simples de movimento)
+            for (const particle of particles) {
+                particle.position.add(particle.velocity);
+                particle.age += 0.1;
+
+                // Ajusta a opacidade e tamanho com o tempo
+                const lifeRatio = particle.age / particle.lifespan;
+                particle.material.op
